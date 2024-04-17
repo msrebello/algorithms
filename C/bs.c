@@ -7,28 +7,77 @@
 */
 
 
-#include<stdio.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define NOT_FOUND -1
 
+int attempts = 0;
 
-int list[] = {1, 3, 5, 7, 9};
-int arr_length = sizeof(list) / sizeof(list[0]); // Calcula o comprimento da lista dividindo o tamanho total em bytes pelo tamanho em bytes do primeiro elemento.
+int *allocate_int_array(int s);
+int binary_search(int arr[], int target, int s);
 
-int binary_search(int arr[], int target);
+int main(int argc, char const *argv[]) {   
+    int size;
 
-int main(int argc, char const *argv[])
-{   
-    int target = 7;
+    printf("Tamanho para array: ");
+    scanf("%d", &size);
 
-    int pos = binary_search(list, target);
+    if (size < 1) {
+        printf("Tamanho invalido!\n");
+        return 1;
+    }
 
-    if(pos == NOT_FOUND)
-        printf("Target not found!\nThat target is not on array\n");
-    else
-        printf("Target position: %d\n", pos);
+    int *arr = allocate_int_array(size);
+
+    if (arr == NULL) {
+        printf("Não foi possivel alocar o array!\n");
+        return 1;
+    }
+
+    int target;
+
+    printf("Digite o alvo (elemento) a ser encontrado no array: ");
+    scanf("%d", &target);
+
+    int pos = binary_search(arr, target, size);
+
+    if(pos == NOT_FOUND) {
+        printf("Elemento não encontrado!\n"
+            "O alvo digitado não esta contido no array!!\n");
+    } else {
+        printf("Alvo encontrado!\n"
+            "Posicao do alvo no array: %d\n"
+            "Numero de tentativas ate encontrar o alvo: %d\n", pos, attempts);
+    }
 
     return 0;
+}
+
+/*
+    Aloca dinamicamente memória para um array de inteiros 
+    de tamanho 'size', preenche-o com valores sequenciais 
+    e retorna um ponteiro para o array.
+*/
+
+int *allocate_int_array(int s) {
+    int *v = malloc(s * sizeof(int));
+
+    if (!v) {
+        return NULL;
+    }
+
+    int i;
+    printf("Elementos do array: [");
+
+    for (i = 0; i < s; i++) {
+        v[i] = i * 4;
+        printf(i < s - 1 ? "%d " : "%d", v[i]);
+    }
+
+    printf("]\n");
+    
+   return v;
 }
 
 /**
@@ -40,22 +89,24 @@ int main(int argc, char const *argv[])
  * @return o índice do alvo se encontrado; caso contrário, retorna um valor sentinela indicando que o elemento não foi encontrado
 */
 
-int binary_search(int arr[], int target) {
+int binary_search(int arr[], int target, int s) {
 
-    int lower_bound = 0;
-    int upper_bound = arr_length - 1;
+    int low = 0;
+    int high = s - 1;
 
-    while (lower_bound <= upper_bound)
-    {
-        int middle = (lower_bound + upper_bound) / 2;
-        int current_item = arr[middle];
+    while (low <= high) {
+        int mid = (low + high) / 2;
 
-        if(current_item == target)
-            return middle;
-        else if(current_item > target)
-            upper_bound = middle - 1;
-        else
-            lower_bound = middle + 1;
+        if(arr[mid] == target) {
+            attempts++;
+            return mid;
+        } else if(arr[mid] < target) {
+            attempts++;
+            low = mid + 1;
+        } else {
+            attempts++;
+            high = mid - 1;
+        }    
     }
     
     return NOT_FOUND;
